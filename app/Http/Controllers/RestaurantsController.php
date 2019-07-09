@@ -42,7 +42,8 @@ class RestaurantsController extends Controller
                 array_push($ratingArray,$restaurant->rating);
             }
         }
-        $average = array_sum($insideArray)/count($insideArray);
+        $average = array_sum($ratingArray)/count($insideArray);
+        $std = $this->stats_standard_deviation($ratingArray);
         $arr = array('count' => count($insideArray), 'avg' => $average, 'std' => 3);
 
         return $arr;
@@ -124,13 +125,6 @@ class RestaurantsController extends Controller
     }
 
     public function distanceBtwTwoPoints($lat1,$lng1,$lat2,$lng2){
-        /*
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLng/2) * Math.sin(dLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double dist = (double) (Constans.RADIUS_OF_EARTH_METERS * c);
-        */
         if (($lat1 == $lat2) && ($lng1 == $lng2)) {
             return 0;
         }
@@ -148,5 +142,26 @@ class RestaurantsController extends Controller
 
         }
 
+    }
+    function stats_standard_deviation(array $array, $sample = false) {
+        $coutArray = count($array);
+        if ($coutArray === 0) {
+            trigger_error("The array has zero elements", E_USER_WARNING);
+            return false;
+        }
+        if ($sample && $coutArray === 1) {
+            trigger_error("The array has only 1 element", E_USER_WARNING);
+            return false;
+        }
+        $mean = array_sum($array) / $coutArray;
+        $carry = 0.0;
+        foreach ($array as $val) {
+            $d = ((double) $val) - $mean;
+            $carry += $d * $d;
+        };
+        if ($sample) {
+           --$coutArray;
+        }
+        return sqrt($carry / $coutArray);
     }
 }
